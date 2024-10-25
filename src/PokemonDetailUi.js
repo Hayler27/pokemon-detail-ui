@@ -3,6 +3,7 @@ import { getComponentSharedStyles } from '@bbva-web-components/bbva-core-lit-hel
 import styles from './pokemon-detail-ui.css.js';
 import '@bbva-experience-components/bbva-button-default/bbva-button-default.js';
 import '@bbva-experience-components/bbva-type-text/bbva-type-text.js';
+import '@pokedex/pokemon-dm/pokemon-dm.js'; 
 
 export class PokemonDetailUi extends LitElement {
   static get properties() {
@@ -14,27 +15,14 @@ export class PokemonDetailUi extends LitElement {
   constructor() {
     super();
     this.pokemons = [];
-    this.fetchPokemons();
   }
 
-  async fetchPokemons() {
-    const response = await fetch('https://pokeapi.co/api/v2/pokemon?limit=100');
-    const data = await response.json();
-
-    const pokemonDetails = await Promise.all(
-      data.results.map(pokemon => fetch(pokemon.url).then(res => res.json()))
-    );
-
-    this.pokemons = pokemonDetails.filter(pokemon => !pokemon.evolves_from_species).map(pokemon => ({
-      name: pokemon.name,
-      image: pokemon.sprites.front_default,
-      abilities: pokemon.abilities.map(ability => ability.ability.name).join(', '),
-    }));
+  async firstUpdated() {
+    const pokemonDm = this.shadowRoot.querySelector('pokemon-dm');
+    this.pokemons = await pokemonDm.fetchPokemons();
   }
 
-  handleDetails(pokemonName) {
-    alert(`Ver detalles de ${pokemonName}`);
-  }
+
 
   static get styles() {
     return [
@@ -58,14 +46,6 @@ export class PokemonDetailUi extends LitElement {
         .card img {
           width: 100%;
         }
-        .card h2 {
-          font-size: 1.2em;
-          margin: 10px 0;
-        }
-        .card p {
-          font-size: 0.9em;
-          color: #555;
-        }
       `,
     ];
   }
@@ -86,6 +66,7 @@ export class PokemonDetailUi extends LitElement {
           </div>
         `)}
       </div>
+      <pokemon-dm></pokemon-dm>
     `;
   }
 }
